@@ -3,7 +3,8 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const Campground = require('./models/campground');
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
+const AppError = require('./AppError');
 
 mongoose.connect('mongodb://yelpcampdbadmin:secret@localhost:27017/yelp-camp');
 
@@ -59,6 +60,17 @@ app.put('/campgrounds/:id', async (req, res) => {
 app.delete('/campgrounds/:id', async (req, res) => {
     await Campground.findByIdAndDelete(req.params.id)
     res.redirect('/campgrounds')
+})
+
+app.use((err, req, res) => {
+    if (err.name === 'CastError') {
+        err = new AppError('Product Not Found (Invalid ID)', 404);
+    }
+    if (err.name === 'ValidationError') {
+        err = new AppError(err.message, 400);
+    }
+    const { status = 500, message = 'Something went wrong!' } = err;
+    res.status(status).send(message);
 })
 
 app.listen(3000, () => {
