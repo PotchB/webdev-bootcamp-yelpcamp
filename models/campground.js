@@ -4,15 +4,15 @@ const Schema = mongoose.Schema;
 const CampgroundSchema = new Schema({
     title: {
         type: String,
-        required: true
+        required: [true, 'Title cannot be blank.']
     },
     image: {
         type: String
     },
     price: {
 		type: Number,
-		required: true,
-		min: [0, 'Price must be positive']    // error msg in the 2nd argument
+		required: [true, 'Price cannot be blank.'],
+		min: [0, 'Price must be greater than or equal to zero.']    // error msg in the 2nd argument
 	},
     description: {
         type: String
