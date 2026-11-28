@@ -44,25 +44,37 @@ app.post('/campgrounds', async (req, res) => {
 
 app.get('/campgrounds/:id', async (req, res) => {
     const campground = await Campground.findById(req.params.id);
+    if (!campground) {
+        throw new AppError('Campground not found', 404);
+    }
     res.render('campgrounds/show', { campground })
 })
 
 app.get('/campgrounds/:id/edit', async (req, res) => {
     const campground = await Campground.findById(req.params.id);
+    if (!campground) {
+        throw new AppError('Edit: Campground not found', 404);
+    }
     res.render('campgrounds/edit', { campground })
 })
 
 app.put('/campgrounds/:id', async (req, res) => {
     const updatedCampground = await Campground.findByIdAndUpdate(req.params.id, req.body.campground, { returnDocument: 'after', runValidators: true });
+    if (!updatedCampground) {
+        throw new AppError('Update: Campground not found', 404);
+    }
     res.redirect(`/campgrounds/${updatedCampground._id}`)
 })
 
 app.delete('/campgrounds/:id', async (req, res) => {
-    await Campground.findByIdAndDelete(req.params.id)
+    const toDelete = await Campground.findByIdAndDelete(req.params.id)
+    if (!toDelete) {
+        throw new AppError('Campground not found', 404);
+    }
     res.redirect('/campgrounds')
 })
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     if (err.name === 'CastError') {
         err = new AppError('Product Not Found (Invalid ID)', 404);
     }
